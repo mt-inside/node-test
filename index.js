@@ -1,24 +1,39 @@
-var express = require('express');
+'use strict';
+
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const HOST = "0.0.0.0"
+const PORT = 8080;
+
 var app = express();
+app.use(cors());
 
-app.set('view engine', 'jade');
-app.set('views', './views');
-
-app.get('/hello', function (req, res) {
-    res.send('Hello World!');
+app.listen(PORT, HOST, () => {
+ console.log(`Server running on http://${HOST}:${PORT}`);
 });
 
-app.get('/', function(req, res) {
-    res.render('index', {});
+app.get("/deadline", async (req, res, next) => {
+    fs.readFile(path.join(__dirname, "deadline.txt"), { encoding: 'utf-8' }, function(err, data) {
+        if (!err) {
+            res.json({ deadline: data.trim() });
+        } else {
+            console.log(err);
+        }
+    });
 });
 
-app.use(express.static('app'));
-app.use('/lib', express.static('bower_components'));
-app.use('/data', express.static('data'));
-
-var server = app.listen(1337, function () {
-    var host = server.address().address;
-    var port = server.address().port;
-
-    console.log('Server running at http://%s:%s', host, port);
+app.get("/quotes", async (req, res, next) => {
+    fs.readFile(path.join(__dirname, "quotes.json"), { encoding: 'utf-8' }, function(err, data) {
+        if (!err) {
+            let d = JSON.parse(data);
+            res.json({ quotes: d });
+        } else {
+            console.log(err);
+        }
+    });
 });
